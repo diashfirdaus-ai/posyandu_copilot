@@ -54,48 +54,76 @@
         .markdown-body p {
             margin-bottom: 0.5rem;
         }
+
+        /* Premium sidebar tab animations and styles */
+        .nav-btn {
+            border-left: 4px solid transparent;
+            border-radius: 0 16px 16px 0;
+            margin-left: -16px;
+            padding-left: 24px !important;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .nav-btn:hover {
+            background-color: #f1f5f9;
+            color: #1e293b;
+        }
+        .nav-btn-active-triage {
+            background: linear-gradient(to right, #eff6ff, #f8fafc);
+            color: #2563eb !important;
+            border-left-color: #2563eb;
+            font-weight: 600;
+        }
+        .nav-btn-active-emr {
+            background: linear-gradient(to right, #ecfdf5, #f8fafc);
+            color: #059669 !important;
+            border-left-color: #059669;
+            font-weight: 600;
+        }
+        .nav-btn-active-rag {
+            background: linear-gradient(to right, #faf5ff, #f8fafc);
+            color: #7c3aed !important;
+            border-left-color: #7c3aed;
+            font-weight: 600;
+        }
     </style>
 </head>
 
-<body class="bg-slate-100 font-sans text-slate-800 h-screen overflow-hidden flex">
+<body class="bg-slate-50 font-sans text-slate-800 h-screen overflow-hidden flex">
 
-    <aside class="w-64 bg-white border-r border-slate-200 flex flex-col shadow-sm z-10 shrink-0">
-        <div class="p-5 border-b border-slate-100">
-            <div class="flex items-center gap-2 text-blue-700 font-bold text-xl">
-                <i class="ph ph-heartbeat text-2xl"></i>
-                <span>PKM-Copilot</span>
+    <aside class="w-66 bg-white border-r border-slate-200 flex flex-col shadow-md z-10 shrink-0">
+        <div class="p-5 border-b border-slate-200 bg-slate-50/50">
+            <div class="flex items-center gap-3 mb-2.5">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/4/4e/Logo_Kementerian_Kesehatan_Republik_Indonesia_%282024_rev%29.svg" 
+                     alt="Logo Kemenkes RI" class="h-10 w-auto object-contain">
+                <div class="border-l border-slate-300 h-8"></div>
+                <div class="text-blue-800 font-extrabold text-lg leading-tight tracking-tight flex flex-col">
+                    <span>PKM</span>
+                    <span class="text-xs text-emerald-600 font-medium tracking-normal">Copilot</span>
+                </div>
             </div>
-            <p class="text-xs text-slate-500 mt-1">Multi-Agent Layanan Primer</p>
+            <div class="bg-blue-600/10 text-blue-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full inline-block">
+                Asisten Layanan Primer
+            </div>
         </div>
 
         <nav class="flex-1 p-4 space-y-2">
             <button onclick="switchTab('triage')" id="nav-triage"
-                class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all bg-blue-50 text-blue-700">
+                class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-sm font-medium transition-all nav-btn-active-triage">
                 <i class="ph ph-user text-xl"></i>
                 Triage Pasien
             </button>
 
             <button onclick="switchTab('emr')" id="nav-emr"
-                class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all text-slate-600 hover:bg-slate-50">
+                class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-sm font-medium transition-all text-slate-600">
                 <i class="ph ph-file-text text-xl"></i>
                 Rekam Medis (EMR)
             </button>
 
             <button onclick="switchTab('rag')" id="nav-rag"
-                class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all text-slate-600 hover:bg-slate-50">
+                class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-sm font-medium transition-all text-slate-600">
                 <i class="ph ph-book-open text-xl"></i>
                 Pedoman Klinis RAG
             </button>
-
-            <div class="pt-6">
-                <label
-                    class="block text-xs font-semibold text-slate-500 mb-2 px-2 uppercase tracking-wider">Pengaturan</label>
-                <div class="px-2">
-                    <input type="password" id="api-key-input" placeholder="Masukkan Mistral API Key..."
-                        class="w-full text-xs p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-slate-50">
-                    <p class="text-[10px] text-slate-400 mt-1">Opsional jika MISTRAL_API_KEY diset di Vercel.</p>
-                </div>
-            </div>
         </nav>
 
         <div class="p-4 bg-slate-50 m-4 rounded-xl border border-slate-200">
@@ -114,28 +142,29 @@
         <!-- ========================================== -->
         <!-- AGENT 1: PATIENT TRIAGE                    -->
         <!-- ========================================== -->
-        <div id="tab-triage" class="tab-content p-6 max-w-4xl mx-auto space-y-6 block">
-            <div class="bg-blue-50 border border-blue-100 rounded-xl p-5">
-                <h2 class="text-lg font-bold text-blue-800 flex items-center gap-2 mb-2">
-                    <i class="ph-fill ph-robot text-xl"></i> Agent 1: Patient Intake & Triage
+        <div id="tab-triage" class="tab-content p-6 max-w-5xl mx-auto space-y-6 block">
+            <div class="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-6 shadow-md border-b-4 border-blue-700 text-white relative overflow-hidden">
+                <div class="absolute -right-6 -bottom-10 opacity-10 text-9xl">
+                    <i class="ph ph-robot"></i>
+                </div>
+                <h2 class="text-xl font-bold flex items-center gap-3 mb-2">
+                    <i class="ph-fill ph-robot text-2xl"></i> Agent 1: Patient Intake & Triage
                 </h2>
-                <p class="text-sm text-blue-700">
-                    Mensimulasikan agen yang menerima keluhan pasien via teks/WhatsApp dan mengubahnya menjadi data
-                    terstruktur untuk antrean RME.
+                <p class="text-sm text-blue-100 leading-relaxed max-w-2xl">
+                    Menerima keluhan pasien dalam bahasa alami (seperti pesan WhatsApp) dan mengekstraknya secara instan menjadi data klinis terstruktur untuk antrean Rekam Medis Elektronik (RME).
                 </p>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <!-- Input Area -->
-                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex flex-col h-full">
-                    <label class="block text-sm font-semibold text-slate-700 mb-2">Input Keluhan Pasien (Bahasa
-                        Alami):</label>
+                <div class="bg-white p-6 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 border border-slate-200 flex flex-col h-full">
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Input Keluhan Pasien (Bahasa Alami):</label>
                     <textarea id="triage-input"
-                        class="w-full flex-1 min-h-[160px] p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none text-sm text-slate-700"
+                        class="w-full flex-1 min-h-[160px] p-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none text-sm text-slate-700 bg-slate-50/50"
                         placeholder="Ketik keluhan pasien di sini...">Halo sus, saya dari kemarin malam mual-mual dan muntah terus sudah 4 kali. Perut rasanya perih. Oh ya saya ada alergi obat amoxicillin ya. Badan juga agak sumeng.</textarea>
 
                     <button id="btn-triage" onclick="handleTriage()"
-                        class="mt-4 w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-lg flex items-center justify-center gap-2 transition-colors disabled:opacity-50">
+                        class="mt-4 w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-3 rounded-xl flex items-center justify-center gap-2 transition-all shadow-sm hover:shadow-md disabled:opacity-50 active:scale-[0.98]">
                         <i class="ph-bold ph-activity text-lg"></i>
                         <span id="btn-triage-text">Ekstrak Data Triage</span>
                     </button>
@@ -143,7 +172,7 @@
 
                 <!-- Output Area -->
                 <div
-                    class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex flex-col h-full min-h-[300px]">
+                    class="bg-white p-6 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 border border-slate-200 flex flex-col h-full min-h-[300px]">
                     <h3 class="text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
                         <i class="ph-bold ph-file-text text-lg"></i> Hasil Analisis (Terstruktur)
                     </h3>
@@ -210,34 +239,35 @@
         <!-- ========================================== -->
         <!-- AGENT 2: EMR SUMMARIZATION                 -->
         <!-- ========================================== -->
-        <div id="tab-emr" class="tab-content p-6 max-w-4xl mx-auto space-y-6 hidden">
-            <div class="bg-emerald-50 border border-emerald-100 rounded-xl p-5">
-                <h2 class="text-lg font-bold text-emerald-800 flex items-center gap-2 mb-2">
-                    <i class="ph-fill ph-file-text text-xl"></i> Agent 2: EMR Summarization
+        <div id="tab-emr" class="tab-content p-6 max-w-5xl mx-auto space-y-6 hidden">
+            <div class="bg-gradient-to-r from-emerald-600 to-teal-600 rounded-2xl p-6 shadow-md border-b-4 border-emerald-700 text-white relative overflow-hidden">
+                <div class="absolute -right-6 -bottom-10 opacity-10 text-9xl">
+                    <i class="ph ph-file-text"></i>
+                </div>
+                <h2 class="text-xl font-bold flex items-center gap-3 mb-2">
+                    <i class="ph-fill ph-file-text text-2xl"></i> Agent 2: EMR Summarization
                 </h2>
-                <p class="text-sm text-emerald-700">
-                    Membantu dokter membaca riwayat kunjungan panjang pasien (yang sering ditulis tidak baku) dan
-                    mengubahnya menjadi ringkasan klinis yang cepat dibaca (Copilot Dokter).
+                <p class="text-sm text-emerald-100 leading-relaxed max-w-2xl">
+                    Membantu dokter menganalisis riwayat rekam medis (yang sering ditulis secara tidak baku) dan merangkumnya menjadi ringkasan klinis yang terstruktur dan siap dibaca dalam 5 detik.
                 </p>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <!-- Raw EMR Area -->
-                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex flex-col h-full">
+                <div class="bg-white p-6 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 border border-slate-200 flex flex-col h-full">
                     <label class="block text-sm font-semibold text-slate-700 mb-2 flex items-center justify-between">
                         <span>Catatan Historis Rekam Medis:</span>
-                        <span class="bg-slate-100 text-slate-500 text-[10px] px-2 py-1 rounded">Mentah / Tdk
-                            terstruktur</span>
+                        <span class="bg-slate-100 text-slate-500 text-[10px] px-2 py-0.5 rounded font-sans">Mentah / Tidak Terstruktur</span>
                     </label>
                     <textarea id="emr-input"
-                        class="w-full flex-1 min-h-[250px] p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 resize-none text-sm font-mono text-slate-600 bg-slate-50">Riwayat Kunjungan Tn. Budi (No RM: 102938):
+                        class="w-full flex-1 min-h-[250px] p-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 resize-none text-sm font-mono text-slate-600 bg-slate-50/50">Riwayat Kunjungan Tn. Budi (No RM: 102938):
 12 Jan 2024: Pasien dtg ngeluh pusing bgt kyk muter. Tensinya tinggi bgt 160/100. Pusing dirasa tembus ke belakang. Dikasih amlodipin 5mg 1x1. Disuruh kurangi garam.
 5 Feb 2024: Dtg lagi msh pusing, tensi 150/95. Katanya sering lupa mnm obat krn ngrasa udh baikan klo abis mnm sehari. Ada riwayat maag jd ga berani mnm obat macem2 sblm makan. Edukasi ulang cara mnm amlodipin.
 20 Apr 2024: Cek rutin tensi 140/90. Pusing berkurang. Tepi batuk2 berdahak udh 3 hari. Dikasih ambroxol.
 10 Jul 2024 (Hari ini): Keluhan pusing berat tengkuk pegal, mata kunang2. Mual jg krn telat makan.</textarea>
 
                     <button id="btn-emr" onclick="handleSummarize()"
-                        class="mt-4 w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2.5 rounded-lg flex items-center justify-center gap-2 transition-colors disabled:opacity-50">
+                        class="mt-4 w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-semibold py-3 rounded-xl flex items-center justify-center gap-2 transition-all shadow-sm hover:shadow-md disabled:opacity-50 active:scale-[0.98]">
                         <i class="ph-bold ph-caret-right text-lg"></i>
                         <span id="btn-emr-text">Buat Ringkasan AI</span>
                     </button>
@@ -245,7 +275,7 @@
 
                 <!-- Output Area -->
                 <div
-                    class="bg-white p-5 rounded-xl shadow-sm border border-emerald-200 bg-emerald-50/30 flex flex-col h-full min-h-[300px]">
+                    class="bg-white p-6 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 border border-emerald-100 bg-emerald-50/10 flex flex-col h-full min-h-[300px]">
                     <h3
                         class="text-sm font-semibold text-emerald-800 mb-4 flex items-center gap-2 border-b border-emerald-100 pb-2 shrink-0">
                         <i class="ph-bold ph-stethoscope text-lg"></i> Copilot Summary
@@ -271,19 +301,21 @@
         <!-- ========================================== -->
         <!-- AGENT 3: CLINICAL GUIDELINE RAG            -->
         <!-- ========================================== -->
-        <div id="tab-rag" class="tab-content p-6 max-w-4xl mx-auto h-[calc(100vh)] flex flex-col pb-6 hidden">
-            <div class="bg-purple-50 border border-purple-100 rounded-xl p-5 mb-4 shrink-0">
-                <h2 class="text-lg font-bold text-purple-800 flex items-center gap-2 mb-2">
-                    <i class="ph-fill ph-book-open text-xl"></i> Agent 3: Clinical Guideline RAG
+        <div id="tab-rag" class="tab-content p-6 max-w-5xl mx-auto h-[calc(100vh)] flex flex-col pb-6 hidden">
+            <div class="bg-gradient-to-r from-purple-600 to-fuchsia-600 rounded-2xl p-6 shadow-md border-b-4 border-purple-700 text-white relative overflow-hidden mb-4 shrink-0">
+                <div class="absolute -right-6 -bottom-10 opacity-10 text-9xl">
+                    <i class="ph ph-book-open"></i>
+                </div>
+                <h2 class="text-xl font-bold flex items-center gap-3 mb-2">
+                    <i class="ph-fill ph-book-open text-2xl"></i> Agent 3: Clinical Guideline RAG
                 </h2>
-                <p class="text-sm text-purple-700">
-                    Mensimulasikan Retrieval-Augmented Generation (RAG). Agen dibatasi (grounded) HANYA untuk menjawab
-                    dari konteks simulasi SOP/Pedoman Kemenkes untuk mencegah halusinasi.
+                <p class="text-sm text-purple-100 leading-relaxed max-w-2xl">
+                    Menggunakan metode Retrieval-Augmented Generation (RAG). Asisten dibatasi secara ketat hanya dapat menjawab berdasarkan dokumen SOP resmi Kemenkes untuk mencegah terjadinya halusinasi medis.
                 </p>
             </div>
 
             <div
-                class="flex-1 bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col overflow-hidden relative">
+                class="flex-1 bg-white rounded-2xl shadow-sm border border-slate-200 flex flex-col overflow-hidden relative">
 
                 <!-- Database Indicator -->
                 <div class="bg-slate-100 border-b border-slate-200 px-4 py-2 flex items-center gap-2 shrink-0">
@@ -348,7 +380,7 @@
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
             // Reset all nav buttons
             document.querySelectorAll('.nav-btn').forEach(el => {
-                el.classList.remove('bg-blue-50', 'text-blue-700', 'bg-emerald-50', 'text-emerald-700', 'bg-purple-50', 'text-purple-700');
+                el.classList.remove('nav-btn-active-triage', 'nav-btn-active-emr', 'nav-btn-active-rag');
                 el.classList.add('text-slate-600');
             });
 
@@ -357,21 +389,21 @@
 
             // Highlight nav button
             const navBtn = document.getElementById(`nav-${tabId}`);
-            navBtn.classList.remove('text-slate-600', 'hover:bg-slate-50');
+            navBtn.classList.remove('text-slate-600');
 
             if (tabId === 'triage') {
-                navBtn.classList.add('bg-blue-50', 'text-blue-700');
+                navBtn.classList.add('nav-btn-active-triage');
             } else if (tabId === 'emr') {
-                navBtn.classList.add('bg-emerald-50', 'text-emerald-700');
+                navBtn.classList.add('nav-btn-active-emr');
             } else if (tabId === 'rag') {
-                navBtn.classList.add('bg-purple-50', 'text-purple-700');
+                navBtn.classList.add('nav-btn-active-rag');
                 scrollToBottom();
             }
         }
 
         // Get API Key safely
         function getApiKey() {
-            return document.getElementById('api-key-input').value.trim();
+            return ""; // API Key fully managed on backend (Vercel Env)
         }
 
         // Core API Caller targeting our Vercel Serverless Function

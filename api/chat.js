@@ -9,7 +9,7 @@ export default async function handler(req, res) {
 
     if (!finalApiKey) {
         return res.status(400).json({ 
-            error: 'API Key tidak ditemukan. Silakan masukkan Mistral API Key di sidebar atau konfigurasikan MISTRAL_API_KEY di environment variables Vercel.' 
+            error: 'API Key tidak ditemukan. Silakan konfigurasikan MISTRAL_API_KEY di environment variables Vercel Anda.' 
         });
     }
 
