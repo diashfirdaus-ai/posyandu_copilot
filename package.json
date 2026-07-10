@@ -1,0 +1,11 @@
+{
+  "name": "posyandu-copilot",
+  "version": "1.0.0",
+  "description": "PKM-Copilot - Asisten Layanan Primer",
+  "main": "index.html",
+  "type": "module",
+  "scripts": {
+    "dev": "vercel dev",
+    "start": "vercel dev"
+  }
+}

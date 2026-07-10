@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PKM-Copilot - Asisten Layanan Primer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', "Liberation Mono", "Courier New", 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Load Phosphor Icons for UI elements -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <style>
+        /* Custom scrollbar for better appearance */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 20px;
+        }
+
+        .animate-spin-slow {
+            animation: spin 2s linear infinite;
+        }
+
+        .markdown-body ul {
+            list-style-type: disc;
+            padding-left: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .markdown-body strong {
+            font-weight: 600;
+        }
+
+        .markdown-body p {
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+
+<body class="bg-slate-100 font-sans text-slate-800 h-screen overflow-hidden flex">
+
+    <aside class="w-64 bg-white border-r border-slate-200 flex flex-col shadow-sm z-10 shrink-0">
+        <div class="p-5 border-b border-slate-100">
+            <div class="flex items-center gap-2 text-blue-700 font-bold text-xl">
+                <i class="ph ph-heartbeat text-2xl"></i>
+                <span>PKM-Copilot</span>
+            </div>
+            <p class="text-xs text-slate-500 mt-1">Multi-Agent Layanan Primer</p>
+        </div>
+
+        <nav class="flex-1 p-4 space-y-2">
+            <button onclick="switchTab('triage')" id="nav-triage"
+                class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all bg-blue-50 text-blue-700">
+                <i class="ph ph-user text-xl"></i>
+                Triage Pasien
+            </button>
+
+            <button onclick="switchTab('emr')" id="nav-emr"
+                class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all text-slate-600 hover:bg-slate-50">
+                <i class="ph ph-file-text text-xl"></i>
+                Rekam Medis (EMR)
+            </button>
+
+            <button onclick="switchTab('rag')" id="nav-rag"
+                class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all text-slate-600 hover:bg-slate-50">
+                <i class="ph ph-book-open text-xl"></i>
+                Pedoman Klinis RAG
+            </button>
+
+            <div class="pt-6">
+                <label
+                    class="block text-xs font-semibold text-slate-500 mb-2 px-2 uppercase tracking-wider">Pengaturan</label>
+                <div class="px-2">
+                    <input type="password" id="api-key-input" placeholder="Masukkan Mistral API Key..."
+                        class="w-full text-xs p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-slate-50">
+                    <p class="text-[10px] text-slate-400 mt-1">Opsional jika MISTRAL_API_KEY diset di Vercel.</p>
+                </div>
+            </div>
+        </nav>
+
+        <div class="p-4 bg-slate-50 m-4 rounded-xl border border-slate-200">
+            <div class="flex items-start gap-2">
+                <i class="ph ph-info text-blue-500 mt-0.5 text-lg shrink-0"></i>
+                <p class="text-[10px] text-slate-500 leading-tight">
+                    Aplikasi ini adalah purwarupa penelitian Informatika. Tidak menggunakan data asli pasien (HIPAA
+                    compliance).
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    <main class="flex-1 h-screen overflow-y-auto relative bg-slate-100">
+
+        <!-- ========================================== -->
+        <!-- AGENT 1: PATIENT TRIAGE                    -->
+        <!-- ========================================== -->
+        <div id="tab-triage" class="tab-content p-6 max-w-4xl mx-auto space-y-6 block">
+            <div class="bg-blue-50 border border-blue-100 rounded-xl p-5">
+                <h2 class="text-lg font-bold text-blue-800 flex items-center gap-2 mb-2">
+                    <i class="ph-fill ph-robot text-xl"></i> Agent 1: Patient Intake & Triage
+                </h2>
+                <p class="text-sm text-blue-700">
+                    Mensimulasikan agen yang menerima keluhan pasien via teks/WhatsApp dan mengubahnya menjadi data
+                    terstruktur untuk antrean RME.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Input Area -->
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex flex-col h-full">
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Input Keluhan Pasien (Bahasa
+                        Alami):</label>
+                    <textarea id="triage-input"
+                        class="w-full flex-1 min-h-[160px] p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none text-sm text-slate-700"
+                        placeholder="Ketik keluhan pasien di sini...">Halo sus, saya dari kemarin malam mual-mual dan muntah terus sudah 4 kali. Perut rasanya perih. Oh ya saya ada alergi obat amoxicillin ya. Badan juga agak sumeng.</textarea>
+
+                    <button id="btn-triage" onclick="handleTriage()"
+                        class="mt-4 w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-lg flex items-center justify-center gap-2 transition-colors disabled:opacity-50">
+                        <i class="ph-bold ph-activity text-lg"></i>
+                        <span id="btn-triage-text">Ekstrak Data Triage</span>
+                    </button>
+                </div>
+
+                <!-- Output Area -->
+                <div
+                    class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex flex-col h-full min-h-[300px]">
+                    <h3 class="text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
+                        <i class="ph-bold ph-file-text text-lg"></i> Hasil Analisis (Terstruktur)
+                    </h3>
+
+                    <div id="triage-error" class="hidden bg-red-50 text-red-600 p-3 rounded-lg text-sm mb-3"></div>
+
+                    <!-- Placeholder before result -->
+                    <div id="triage-placeholder"
+                        class="flex-1 flex flex-col items-center justify-center text-slate-400">
+                        <i class="ph ph-robot text-5xl mb-2 opacity-20"></i>
+                        <p class="text-sm text-center">Data terstruktur akan muncul di sini<br />setelah diproses.</p>
+                    </div>
+
+                    <!-- Result Container -->
+                    <div id="triage-result" class="hidden space-y-4 flex-1">
+                        <div class="flex gap-4">
+                            <div id="triage-urgensi-box"
+                                class="p-3 rounded-lg flex-1 border bg-slate-50 border-slate-200">
+                                <span
+                                    class="text-xs font-bold uppercase tracking-wider block mb-1 opacity-70">Urgensi</span>
+                                <span id="triage-urgensi" class="font-semibold text-lg">-</span>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 gap-3">
+                            <div class="bg-slate-50 p-3 rounded-lg border border-slate-100">
+                                <span class="text-xs font-bold text-slate-500 uppercase flex items-center gap-1 mb-1">
+                                    <i class="ph-bold ph-activity"></i> Keluhan Utama
+                                </span>
+                                <p id="triage-keluhan" class="text-slate-800 text-sm font-medium">-</p>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-3">
+                                <div class="bg-slate-50 p-3 rounded-lg border border-slate-100">
+                                    <span
+                                        class="text-xs font-bold text-slate-500 uppercase flex items-center gap-1 mb-1">
+                                        <i class="ph-bold ph-clock"></i> Durasi
+                                    </span>
+                                    <p id="triage-durasi" class="text-slate-800 text-sm">-</p>
+                                </div>
+                                <div class="bg-slate-50 p-3 rounded-lg border border-slate-100">
+                                    <span
+                                        class="text-xs font-bold text-slate-500 uppercase flex items-center gap-1 mb-1">
+                                        <i class="ph-bold ph-warning-circle text-red-500"></i> Alergi
+                                    </span>
+                                    <p id="triage-alergi" class="text-slate-800 text-sm">-</p>
+                                </div>
+                            </div>
+
+                            <div class="bg-slate-50 p-3 rounded-lg border border-slate-100">
+                                <span class="text-xs font-bold text-slate-500 uppercase flex items-center gap-1 mb-1">
+                                    <i class="ph-bold ph-stethoscope"></i> Gejala Penyerta
+                                </span>
+                                <div id="triage-gejala" class="flex flex-wrap gap-2 mt-2">
+                                    <!-- Gejala tags will go here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- AGENT 2: EMR SUMMARIZATION                 -->
+        <!-- ========================================== -->
+        <div id="tab-emr" class="tab-content p-6 max-w-4xl mx-auto space-y-6 hidden">
+            <div class="bg-emerald-50 border border-emerald-100 rounded-xl p-5">
+                <h2 class="text-lg font-bold text-emerald-800 flex items-center gap-2 mb-2">
+                    <i class="ph-fill ph-file-text text-xl"></i> Agent 2: EMR Summarization
+                </h2>
+                <p class="text-sm text-emerald-700">
+                    Membantu dokter membaca riwayat kunjungan panjang pasien (yang sering ditulis tidak baku) dan
+                    mengubahnya menjadi ringkasan klinis yang cepat dibaca (Copilot Dokter).
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Raw EMR Area -->
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex flex-col h-full">
+                    <label class="block text-sm font-semibold text-slate-700 mb-2 flex items-center justify-between">
+                        <span>Catatan Historis Rekam Medis:</span>
+                        <span class="bg-slate-100 text-slate-500 text-[10px] px-2 py-1 rounded">Mentah / Tdk
+                            terstruktur</span>
+                    </label>
+                    <textarea id="emr-input"
+                        class="w-full flex-1 min-h-[250px] p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 resize-none text-sm font-mono text-slate-600 bg-slate-50">Riwayat Kunjungan Tn. Budi (No RM: 102938):
+12 Jan 2024: Pasien dtg ngeluh pusing bgt kyk muter. Tensinya tinggi bgt 160/100. Pusing dirasa tembus ke belakang. Dikasih amlodipin 5mg 1x1. Disuruh kurangi garam.
+5 Feb 2024: Dtg lagi msh pusing, tensi 150/95. Katanya sering lupa mnm obat krn ngrasa udh baikan klo abis mnm sehari. Ada riwayat maag jd ga berani mnm obat macem2 sblm makan. Edukasi ulang cara mnm amlodipin.
+20 Apr 2024: Cek rutin tensi 140/90. Pusing berkurang. Tepi batuk2 berdahak udh 3 hari. Dikasih ambroxol.
+10 Jul 2024 (Hari ini): Keluhan pusing berat tengkuk pegal, mata kunang2. Mual jg krn telat makan.</textarea>
+
+                    <button id="btn-emr" onclick="handleSummarize()"
+                        class="mt-4 w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2.5 rounded-lg flex items-center justify-center gap-2 transition-colors disabled:opacity-50">
+                        <i class="ph-bold ph-caret-right text-lg"></i>
+                        <span id="btn-emr-text">Buat Ringkasan AI</span>
+                    </button>
+                </div>
+
+                <!-- Output Area -->
+                <div
+                    class="bg-white p-5 rounded-xl shadow-sm border border-emerald-200 bg-emerald-50/30 flex flex-col h-full min-h-[300px]">
+                    <h3
+                        class="text-sm font-semibold text-emerald-800 mb-4 flex items-center gap-2 border-b border-emerald-100 pb-2 shrink-0">
+                        <i class="ph-bold ph-stethoscope text-lg"></i> Copilot Summary
+                    </h3>
+
+                    <div id="emr-error" class="hidden bg-red-50 text-red-600 p-3 rounded-lg text-sm mb-3 shrink-0">
+                    </div>
+
+                    <!-- Placeholder before result -->
+                    <div id="emr-placeholder" class="flex-1 flex flex-col items-center justify-center text-emerald-300">
+                        <i class="ph ph-robot text-5xl mb-2 opacity-50"></i>
+                        <p class="text-sm text-center">Ringkasan Copilot untuk<br />dokter akan muncul di sini.</p>
+                    </div>
+
+                    <!-- Result Container -->
+                    <div id="emr-result" class="hidden overflow-y-auto pr-2">
+                        <div id="emr-content" class="markdown-body text-sm text-slate-700"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- AGENT 3: CLINICAL GUIDELINE RAG            -->
+        <!-- ========================================== -->
+        <div id="tab-rag" class="tab-content p-6 max-w-4xl mx-auto h-[calc(100vh)] flex flex-col pb-6 hidden">
+            <div class="bg-purple-50 border border-purple-100 rounded-xl p-5 mb-4 shrink-0">
+                <h2 class="text-lg font-bold text-purple-800 flex items-center gap-2 mb-2">
+                    <i class="ph-fill ph-book-open text-xl"></i> Agent 3: Clinical Guideline RAG
+                </h2>
+                <p class="text-sm text-purple-700">
+                    Mensimulasikan Retrieval-Augmented Generation (RAG). Agen dibatasi (grounded) HANYA untuk menjawab
+                    dari konteks simulasi SOP/Pedoman Kemenkes untuk mencegah halusinasi.
+                </p>
+            </div>
+
+            <div
+                class="flex-1 bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col overflow-hidden relative">
+
+                <!-- Database Indicator -->
+                <div class="bg-slate-100 border-b border-slate-200 px-4 py-2 flex items-center gap-2 shrink-0">
+                    <span class="relative flex h-3 w-3">
+                        <span
+                            class="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-3 w-3 bg-purple-500"></span>
+                    </span>
+                    <span class="text-xs font-medium text-slate-500">Terhubung ke Mock Vector DB (SOP Kemenkes)</span>
+                </div>
+
+                <!-- Chat Area -->
+                <div id="rag-chat-container" class="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50/50 pb-20">
+                    <!-- Initial Message -->
+                    <div class="flex justify-start">
+                        <div
+                            class="max-w-[80%] rounded-2xl p-4 flex gap-3 shadow-sm bg-white border border-slate-200 text-slate-800 rounded-tl-sm">
+                            <i class="ph-fill ph-robot text-xl mt-0.5 shrink-0 text-purple-600"></i>
+                            <div class="text-sm leading-relaxed">
+                                Halo. Saya Asisten Pedoman Klinis Puskesmas. Saya dirancang untuk menjawab pertanyaan
+                                medis HANYA berdasarkan Panduan Praktik Klinis (PPK) Faskes Primer Kemenkes RI. Apa yang
+                                ingin sejawat tanyakan?
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Loading Indicator for Chat -->
+                <div id="rag-loading"
+                    class="hidden absolute bottom-20 left-4 bg-white border border-slate-200 rounded-2xl rounded-tl-sm p-3 shadow-sm items-center gap-2 z-10">
+                    <i class="ph-fill ph-robot text-lg text-purple-600 animate-pulse"></i>
+                    <span class="text-xs text-slate-500">Mencari di Vector Database <span
+                            class="animate-pulse">...</span></span>
+                </div>
+
+                <!-- Input Area -->
+                <div class="p-4 bg-white border-t border-slate-100 shrink-0 absolute bottom-0 left-0 right-0">
+                    <form id="rag-form" class="relative">
+                        <input type="text" id="rag-input"
+                            placeholder="Contoh: Bagaimana tata laksana awal pre-eklampsia di Puskesmas?"
+                            class="w-full pl-4 pr-12 py-3 bg-slate-50 border border-slate-300 rounded-full focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm transition-all" />
+                        <button type="submit" id="btn-rag-send"
+                            class="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-purple-600 hover:bg-purple-700 text-white rounded-full transition-colors disabled:opacity-50">
+                            <i class="ph-bold ph-paper-plane-right"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        // ==========================================
+        // STATE & CORE LOGIC
+        // ==========================================
+        let isProcessing = false;
+
+        // UI Tabs Management
+        function switchTab(tabId) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            // Reset all nav buttons
+            document.querySelectorAll('.nav-btn').forEach(el => {
+                el.classList.remove('bg-blue-50', 'text-blue-700', 'bg-emerald-50', 'text-emerald-700', 'bg-purple-50', 'text-purple-700');
+                el.classList.add('text-slate-600');
+            });
+
+            // Show selected tab
+            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+
+            // Highlight nav button
+            const navBtn = document.getElementById(`nav-${tabId}`);
+            navBtn.classList.remove('text-slate-600', 'hover:bg-slate-50');
+
+            if (tabId === 'triage') {
+                navBtn.classList.add('bg-blue-50', 'text-blue-700');
+            } else if (tabId === 'emr') {
+                navBtn.classList.add('bg-emerald-50', 'text-emerald-700');
+            } else if (tabId === 'rag') {
+                navBtn.classList.add('bg-purple-50', 'text-purple-700');
+                scrollToBottom();
+            }
+        }
+
+        // Get API Key safely
+        function getApiKey() {
+            return document.getElementById('api-key-input').value.trim();
+        }
+
+        // Core API Caller targeting our Vercel Serverless Function
+        async function callMistral(prompt, systemInstruction, isJson = false) {
+            const apiKey = getApiKey();
+
+            const payload = {
+                prompt,
+                systemInstruction,
+                isJson,
+                apiKey
+            };
+
+            const response = await fetch('/api/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                const errText = await response.text();
+                let errMsg = `HTTP error! status: ${response.status}`;
+                try {
+                    const parsed = JSON.parse(errText);
+                    errMsg = parsed.error || errMsg;
+                } catch(e) {}
+                throw new Error(errMsg);
+            }
+
+            const data = await response.json();
+            const text = data.content;
+
+            if (!text) throw new Error("Respons kosong dari API");
+
+            return isJson ? JSON.parse(text) : text;
+        }
+
+        // Simple Markdown Parser (Bold & Lists)
+        function parseMarkdown(text) {
+            let html = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+            // Handle bullet points
+            const lines = html.split('\n');
+            let inList = false;
+            let resultHtml = '';
+
+            lines.forEach(line => {
+                if (line.trim().startsWith('- ') || line.trim().startsWith('* ')) {
+                    if (!inList) {
+                        resultHtml += '<ul>';
+                        inList = true;
+                    }
+                    resultHtml += `<li>${line.trim().substring(2)}</li>`;
+                } else {
+                    if (inList) {
+                        resultHtml += '</ul>';
+                        inList = false;
+                    }
+                    if (line.trim() !== '') {
+                        resultHtml += `<p>${line}</p>`;
+                    }
+                }
+            });
+            if (inList) resultHtml += '</ul>';
+
+            return resultHtml;
+        }
+
+        // ==========================================
+        // AGENT 1 HANDLER: TRIAGE
+        // ==========================================
+        async function handleTriage() {
+            if (isProcessing) return;
+            const inputTxt = document.getElementById('triage-input').value.trim();
+            if (!inputTxt) return;
+
+            // UI Loading state
+            isProcessing = true;
+            const btn = document.getElementById('btn-triage');
+            const btnText = document.getElementById('btn-triage-text');
+            const icon = btn.querySelector('i');
+            const errorDiv = document.getElementById('triage-error');
+            const placeholder = document.getElementById('triage-placeholder');
+            const resultDiv = document.getElementById('triage-result');
+
+            btn.disabled = true;
+            btnText.innerText = "Menganalisis...";
+            icon.className = "ph-bold ph-spinner animate-spin-slow text-lg";
+            errorDiv.classList.add('hidden');
+            placeholder.classList.add('hidden');
+            resultDiv.classList.add('hidden');
+
+            const systemPrompt = `Anda adalah Agent Triage Medis di Puskesmas. Tugas Anda adalah mengekstrak informasi dari keluhan bahasa alami pasien menjadi format terstruktur JSON.
+Keluarkan JSON dengan struktur berikut persis tanpa tambahan markdown:
+{
+  "keluhan_utama": "string",
+  "durasi": "string",
+  "riwayat_alergi": "string (jika tidak ada tulis 'Disangkal')",
+  "gejala_penyerta": ["array of strings"],
+  "tingkat_urgensi": "Rendah | Sedang | Tinggi | Darurat (berdasarkan penilaian medis awal)"
+}`;
+
+            try {
+                const data = await callMistral(inputTxt, systemPrompt, true);
+
+                // Update UI with parsed JSON
+                document.getElementById('triage-keluhan').innerText = data.keluhan_utama || '-';
+                document.getElementById('triage-durasi').innerText = data.durasi || '-';
+                document.getElementById('triage-alergi').innerText = data.riwayat_alergi || '-';
+                document.getElementById('triage-urgensi').innerText = data.tingkat_urgensi || '-';
+
+                // Style urgency box
+                const urgensiBox = document.getElementById('triage-urgensi-box');
+                urgensiBox.className = "p-3 rounded-lg flex-1 border " +
+                    (data.tingkat_urgensi === 'Tinggi' || data.tingkat_urgensi === 'Darurat' ? 'bg-red-50 border-red-200 text-red-800' :
+                        data.tingkat_urgensi === 'Sedang' ? 'bg-amber-50 border-amber-200 text-amber-800' : 'bg-green-50 border-green-200 text-green-800');
+
+                // Render badges for gejala
+                const gejalaContainer = document.getElementById('triage-gejala');
+                gejalaContainer.innerHTML = '';
+                if (data.gejala_penyerta && Array.isArray(data.gejala_penyerta)) {
+                    data.gejala_penyerta.forEach(gejala => {
+                        const span = document.createElement('span');
+                        span.className = "bg-white border border-slate-200 text-slate-600 text-xs px-2 py-1 rounded-md";
+                        span.innerText = gejala;
+                        gejalaContainer.appendChild(span);
+                    });
+                }
+
+                resultDiv.classList.remove('hidden');
+
+            } catch (err) {
+                errorDiv.innerText = err.message;
+                errorDiv.classList.remove('hidden');
+                placeholder.classList.remove('hidden');
+            } finally {
+                isProcessing = false;
+                btn.disabled = false;
+                btnText.innerText = "Ekstrak Data Triage";
+                icon.className = "ph-bold ph-activity text-lg";
+            }
+        }
+
+        // ==========================================
+        // AGENT 2 HANDLER: EMR
+        // ==========================================
+        async function handleSummarize() {
+            if (isProcessing) return;
+            const inputTxt = document.getElementById('emr-input').value.trim();
+            if (!inputTxt) return;
+
+            isProcessing = true;
+            const btn = document.getElementById('btn-emr');
+            const btnText = document.getElementById('btn-emr-text');
+            const icon = btn.querySelector('i');
+            const errorDiv = document.getElementById('emr-error');
+            const placeholder = document.getElementById('emr-placeholder');
+            const resultDiv = document.getElementById('emr-result');
+            const contentDiv = document.getElementById('emr-content');
+
+            btn.disabled = true;
+            btnText.innerText = "Membuat Ringkasan...";
+            icon.className = "ph-bold ph-spinner animate-spin-slow text-lg";
+            errorDiv.classList.add('hidden');
+            placeholder.classList.add('hidden');
+            resultDiv.classList.add('hidden');
+
+            const systemPrompt = `Anda adalah Agent Rekam Medis (EMR) asisten dokter. Tugas Anda adalah membaca raw history pasien yang berantakan, tidak baku, dan merangkumnya menjadi poin-poin klinis ringkas, profesional, dan mudah dibaca dokter dalam waktu 5 detik.
+Gunakan format markdown dengan bullet points. Bagi menjadi 3 bagian tegas:
+**Riwayat Medis Utama** (Penyakit kronis/berulang)
+**Riwayat Pengobatan & Kepatuhan** (Obat dan isu kepatuhan)
+**Kondisi Hari Ini** (Soroti keluhan terakhir)`;
+
+            try {
+                const data = await callMistral(`Tolong ringkas rekam medis ini:\n${inputTxt}`, systemPrompt, false);
+                contentDiv.innerHTML = parseMarkdown(data);
+                resultDiv.classList.remove('hidden');
+            } catch (err) {
+                errorDiv.innerText = err.message;
+                errorDiv.classList.remove('hidden');
+                placeholder.classList.remove('hidden');
+            } finally {
+                isProcessing = false;
+                btn.disabled = false;
+                btnText.innerText = "Buat Ringkasan AI";
+                icon.className = "ph-bold ph-caret-right text-lg";
+            }
+        }
+
+        // ==========================================
+        // AGENT 3 HANDLER: RAG
+        // ==========================================
+        const chatContainer = document.getElementById('rag-chat-container');
+        const ragInput = document.getElementById('rag-input');
+        const ragForm = document.getElementById('rag-form');
+        const ragLoading = document.getElementById('rag-loading');
+        const btnRagSend = document.getElementById('btn-rag-send');
+
+        function scrollToBottom() {
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function appendMessage(role, content) {
+            const div = document.createElement('div');
+            div.className = `flex ${role === 'user' ? 'justify-end' : 'justify-start'}`;
+
+            const innerDiv = document.createElement('div');
+            innerDiv.className = `max-w-[80%] rounded-2xl p-4 flex gap-3 shadow-sm ${role === 'user'
+                ? 'bg-blue-600 text-white rounded-tr-sm'
+                : 'bg-white border border-slate-200 text-slate-800 rounded-tl-sm'
+                }`;
+
+            if (role === 'assistant') {
+                const icon = document.createElement('i');
+                icon.className = "ph-fill ph-robot text-xl mt-0.5 shrink-0 text-purple-600";
+                innerDiv.appendChild(icon);
+            }
+
+            const textDiv = document.createElement('div');
+            textDiv.className = "text-sm leading-relaxed markdown-body";
+            textDiv.innerHTML = parseMarkdown(content);
+            innerDiv.appendChild(textDiv);
+
+            div.appendChild(innerDiv);
+            chatContainer.appendChild(div);
+            scrollToBottom();
+        }
+
+        ragForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (isProcessing) return;
+
+            const userMsg = ragInput.value.trim();
+            if (!userMsg) return;
+
+            // Optimistic UI update
+            appendMessage('user', userMsg);
+            ragInput.value = "";
+
+            isProcessing = true;
+            ragInput.disabled = true;
+            btnRagSend.disabled = true;
+            ragLoading.classList.remove('hidden');
+            ragLoading.classList.add('flex');
+            scrollToBottom();
+
+            // MOCK DATABASE / KNOWLEDGE BASE
+            const mockRetrievedContext = `
+[DOKUMEN: PPK Penatalaksanaan Hipertensi Puskesmas 2023]
+- Diagnosa hipertensi ditegakkan jika TD >= 140/90 mmHg pada 2x pengukuran.
+- Lini pertama pengobatan di Faskes Primer: Amlodipin 5-10mg, Captopril 12.5-25mg.
+- Rujuk ke RS jika: Krisis hipertensi (TD > 180/120) disertai target organ damage, atau hipertensi pada kehamilan (curiga pre-eklampsia).
+
+[DOKUMEN: SOP Kegawatdaruratan Pre-Eklampsia Faskes 1]
+- Tata laksana awal pre-eklampsia berat di Puskesmas sebelum rujuk: 
+1. Oksigenasi 4-5 L/m
+2. Pasang infus RL
+3. Injeksi MgSO4 40% (4 gram IV pelan selama 10-15 menit) sebagai dosis awal untuk cegah kejang. Syarat: Tersedia kalsium glukonas sebagai antidotum.
+4. Segera persiapkan rujukan ke RS PONEK terdekat.
+`;
+
+            const systemPrompt = `Anda adalah Agent RAG Pedoman Klinis. Anda membantu dokter dan bidan.
+Anda HANYA boleh menjawab berdasarkan dokumen Kemenkes/SOP yang diberikan (simulasi dari Vector Database) di bawah ini.
+Jangan gunakan pengetahuan umum internet untuk protokol medis. Jika informasi yang ditanyakan tidak ada di dokumen konteks, Anda WAJIB menjawab: "Maaf, informasi tersebut tidak ditemukan dalam SOP/Pedoman lokal Puskesmas yang tersedia saat ini."
+
+Konteks yang berhasil di-retrieve (diambil) dari Vector DB:
+${mockRetrievedContext}
+`;
+
+            try {
+                const response = await callMistral(userMsg, systemPrompt, false);
+                appendMessage('assistant', response);
+            } catch (err) {
+                appendMessage('assistant', `**Error:** ${err.message}`);
+            } finally {
+                isProcessing = false;
+                ragInput.disabled = false;
+                btnRagSend.disabled = false;
+                ragLoading.classList.add('hidden');
+                ragLoading.classList.remove('flex');
+                ragInput.focus();
+                scrollToBottom();
+            }
+        });
+
+    </script>
+</body>
+
+</html>
